@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+
+  <style>
+    :root {
+      /* 🎨 Brand Colors */
+      --chat--color-primary: #338f21;
+      --chat--color-primary-shade-50: #3e62c7;
+      --chat--color-primary-shade-100: #2f52af;
+
+      --chat--color-secondary: #f6c23e;
+      --chat--color-secondary-shade-50: #e0ae32;
+
+      --chat--color-white: #ffffff;
+      --chat--color-light: #f8f9fc;
+      --chat--color-light-shade-50: #e6e9f1;
+      --chat--color-light-shade-100: #d1d3e2;
+      --chat--color-medium: #a5a6aa;
+      --chat--color-dark: #1b1e2f;
+      --chat--color-disabled: #999;
+      --chat--color-typing: #555;
+
+      /* ⚙️ Layout */
+      --chat--spacing: 0.75rem;
+      --chat--border-radius: 12px;
+      --chat--transition-duration: 0.3s;
+
+      --chat--window--width: 420px;
+      --chat--window--height: 580px;
+
+      /* 🏷 Header */
+      --chat--header--padding: 1rem;
+      --chat--header--background: linear-gradient(135deg, #21a105, #21a105);
+      --chat--header--color: var(--chat--color--grey);
+      --chat--header-height: 70px;
+      --chat--heading--font-size: 1.5em;
+      --chat--header--color: var(--chat--color-white);
+      --chat--subtitle--line-height: 0.2;
+
+      /* 💬 Messages */
+      --chat--message--font-size: 1rem;
+      --chat--message--padding: 0.75rem 1rem;
+      --chat--message--border-radius: 16px;
+      --chat--message-line-height: 1.5;
+
+      --chat--subtitle--font-size: 20px;
+
+      --chat--message--bot--background: var(--chat--color-light);
+      --chat--message--bot--color: var(--chat--color-dark);
+
+      --chat--message--user--background: var(--chat--color-primary);
+      --chat--message--user--color: var(--chat--color-white);
+
+      /* ✨ Toggle (Floating button) */
+      --chat--toggle--background: var(--chat--color-secondary);
+      --chat--toggle--hover--background: #28a745;
+      --chat--toggle--active--background: var(--chat--color-primary-shade-100);
+      --chat--toggle--size: 60px;
+    }
+
+    .chat-layout .chat-header {
+      gap: 0em;
+    }
+
+    n8n-chat-widget {
+      animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chat-header {
+      height: 10px;
+    }
+
+    /* Style for icon buttons */
+    .copy-download-container {
+      margin-top: 8px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .copy-download-container button {
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      transition: color 0.3s ease;
+      color: var(--chat--color-primary);
+    }
+
+    .copy-download-container button:hover {
+      color: var(--chat--color-primary-shade-50);
+    }
+
+    .copy-download-container svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Hide "Powered by N8N" text */
+    .chat-powered-by,
+    .chat-footer .powered-by {
+      display: none !important;
+    }
+
+    /* Show input bar immediately */
+    .chat-footer,
+    .chat-input {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transition: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="chat"></div>
+
+  <script type="module">
+    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+    createChat({
+      webhookUrl: 'https://nextpagetech.app.n8n.cloud/webhook/d4ea1489-eda4-4bb9-924a-9bf207708f8d/chat',
+      target: '#chat',
+      initialMessages: [
+        'Hello 👋',
+        'I am an Expert Packaging Suggesting BOT ',
+      ],
+      i18n: {
+        en: {
+          title: 'Pack Advisor 📦',
+          subtitle: "Next Page Technologies",
+          footer: '',
+          getStarted: 'New Conversation',
+          inputPlaceholder: 'Type your message..',
+        },
+      },
+      enableStreaming: false,
+    });
+
+    const skipLines = [
+      'Hello 👋',
+      'I am an Expert Packaging Suggesting BOT',
+    ];
+
+    function addButtonsToMessage(msgEl) {
+      const text = msgEl.innerText.trim();
+      if (skipLines.includes(text)) return;
+      if (msgEl.querySelector('.copy-download-container')) return;
+
+      const container = document.createElement('div');
+      container.className = 'copy-download-container';
+
+      // Copy button
+      const copyBtn = document.createElement('button');
+      copyBtn.setAttribute('aria-label', 'Copy message');
+      copyBtn.title = 'Copy message';
+      copyBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+      `;
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+      };
+
+      // Download button
+      const downloadBtn = document.createElement('button');
+      downloadBtn.setAttribute('aria-label', 'Download message');
+      downloadBtn.title = 'Download message';
+      downloadBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M5 20h14v-2H5v2zm7-18l-5 5h3v4h4v-4h3l-5-5z"/>
+        </svg>
+      `;
+      downloadBtn.onclick = () => {
+        const blob = new Blob([text], {
+          type: 'text/plain'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'chat-output.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      // Read Aloud button
+      const readAloudBtn = document.createElement('button');
+      readAloudBtn.setAttribute('aria-label', 'Read message aloud');
+      readAloudBtn.title = 'Read message aloud';
+      readAloudBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 10v4a6 6 0 006 6 6 6 0 006-6v-4a6 6 0 00-6-6 6 6 0 00-6 6zM21 8v8h-2v-8h2z"/>
+        </svg>
+      `;
+      readAloudBtn.onclick = () => {
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'en-US'; // Set your language here
+          speechSynthesis.speak(utterance);
+        } else {
+          alert("Sorry, your browser doesn't support text to speech.");
+        }
+      };
+
+      container.appendChild(copyBtn);
+      container.appendChild(downloadBtn);
+      container.appendChild(readAloudBtn);
+
+      msgEl.appendChild(container);
+    }
+
+    function observeChatMessages() {
+      const chatRoot = document.querySelector('#chat');
+      if (!chatRoot) return;
+
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (!(node instanceof HTMLElement)) continue;
+            if (node.classList.contains('chat-message') && node.classList.contains('chat-message-from-bot')) {
+              const markdown = node.querySelector('.chat-message-markdown');
+              if (markdown) addButtonsToMessage(markdown);
+            }
+            const nestedMessages = node.querySelectorAll?.('.chat-message.chat-message-from-bot .chat-message-markdown') ?? [];
+            nestedMessages.forEach(addButtonsToMessage);
+          }
+        }
+      });
+
+      observer.observe(chatRoot, {
+        childList: true,
+        subtree: true
+      });
+      chatRoot.querySelectorAll('.chat-message.chat-message-from-bot .chat-message-markdown').forEach(addButtonsToMessage);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      observeChatMessages();
+    });
+  </script>
+</body>
+
+<title>Custom n8n Chat with Read Aloud Immediate Input</title>
+
+</html>
